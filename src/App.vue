@@ -22,6 +22,13 @@ const minesBoard = reactive(Array.from({ length: HEIGHT }, (_, y) => Array.from(
 }))))
 
 const minesCollect = $ref<BlockState[]>([])
+let flaggedLen = $ref(0)
+const fakerMineslen = computed(() => mines - flaggedLen)
+const now = $(useNow())
+let startMs: number
+let endMS = $ref<number>()
+const timerMS = $computed(() => Math.round(((endMS ?? +now) - (startMs ?? +now)) / 1000))
+
 const directions = [
   [0, 1],
   [1, 1],
@@ -121,20 +128,36 @@ function checkBoard(): mineBoardStatus {
     return 'PLAY'
 }
 function blockClick(block: BlockState) {
-  if (mineBoxStatus === 'READY')
+  if (mineBoxStatus === 'SUCCESS' || mineBoxStatus === 'LOST')
+    return
+  if (mineBoxStatus === 'READY') {
     generateMine(block)
+    startMs = +new Date()
+  }
 
-  if (block.revealed)
+  if (block.revealed || block.flagged)
     return
   if (block.mine) {
     showAllMines()
+    endMS = +new Date()
+    mineBoxStatus = 'LOST'
     setTimeout(() => alert('you lost'))
   }
 
   block.revealed = true
   showZeroBlock(block)
-  if (checkBoard() === 'SUCCESS')
+  if (checkBoard() === 'SUCCESS') {
+    endMS = +new Date()
+    mineBoxStatus = 'SUCCESS'
     setTimeout(() => alert('you win'))
+  }
+}
+
+function rightClick(block: BlockState) {
+  if (mineBoxStatus === 'PLAY' && !block.revealed) {
+    block.flagged = !block.flagged
+    block.flagged ? flaggedLen++ : flaggedLen--
+  }
 }
 </script>
 
@@ -142,14 +165,28 @@ function blockClick(block: BlockState) {
   <main font-sans p="x-4 y-10" text="center gray-700 dark:gray-200">
     <TheFooter />
     <div>Minesweeper</div>
+    <div flex="~ gap-10" justify-center>
+      <div flex="~ gap-1" items-center font-mono text-2xl>
+        <div i-carbon-time />
+        {{ timerMS }}
+      </div>
+      <div flex="~ gap-1" items-center font-mono text-2xl>
+        <div i-mdi-mine />
+        {{ fakerMineslen }}
+      </div>
+    </div>
     <div v-for="r, i in minesBoard" :key="i" flex="~" items-center justify-center>
       <button
         v-for=" block, _i in r" :key="_i" :class="getBlockClass(block)"
         flex="~" h-10 w-10 items-center justify-center m="0.5" hover:bg-gray
         border="1 gray-400/10"
         @click="blockClick(block)"
+        @contextmenu.prevent="rightClick(block)"
       >
-        <template v-if="block.revealed || isDev">
+        <template v-if="block.flagged">
+          <div i-mdi-flag text-red />
+        </template>
+        <template v-else-if="block.revealed || isDev">
           <div v-if="block.mine" i-mdi-mine text-white />
           <div v-else font-600>
             {{ block.adjacentMines ? block.adjacentMines : '' }}
