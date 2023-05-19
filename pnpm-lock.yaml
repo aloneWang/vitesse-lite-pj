@@ -49,7 +49,7 @@ devDependencies:
     specifier: ^13.2.1
     version: 13.2.1
   pnpm:
-    specifier: ^8.2.0
+    specifier: ^8.5.0
     version: 8.2.0
   simple-git-hooks:
     specifier: ^2.8.1
