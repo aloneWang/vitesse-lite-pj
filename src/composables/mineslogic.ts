@@ -128,8 +128,10 @@ export class MineGame {
     //   item.flagged = false
     // })
     this.board.flat().forEach((item) => {
-      if (item.mine)
+      if (item.mine) {
         item.revealed = true
+        item.flagged = false
+      }
     })
   }
 
