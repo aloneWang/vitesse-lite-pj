@@ -18,9 +18,7 @@ export default defineConfig({
   plugins: [
     VueMacros({
       plugins: {
-        vue: Vue({
-          reactivityTransform: true,
-        }),
+        vue: Vue(),
       },
     }),
 

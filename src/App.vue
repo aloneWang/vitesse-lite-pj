@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GameSuccess from './components/GameSuccess.vue'
 import { MineGame } from '~/composables/mineslogic'
 
 type GameDifficuly = 'easy' | 'middle' | 'hard'
@@ -60,5 +61,6 @@ function newGanme(difficulty?: GameDifficuly) {
         @contextmenu.prevent="game.rightClick(block)"
       />
     </div>
+    <GameSuccess :passed="game.mineBoxStatus === 'SUCCESS'" />
   </main>
 </template>
